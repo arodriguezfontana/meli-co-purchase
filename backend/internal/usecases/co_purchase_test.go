@@ -120,6 +120,7 @@ func TestPagoDivididoConUnanimidad(t *testing.T) {
 	if !todoPago {
 		t.Errorf("ERROR: Al confirmar el pago de Tiara, el sistema debería avisar que el pago grupal se completó.")
 	}
+
 	if paymentModule.Status != "COMPLETED" {
 		t.Errorf("ERROR: El estado final del pago grupal debería ser COMPLETED. Obtenido: %s", paymentModule.Status)
 	}

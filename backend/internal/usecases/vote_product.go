@@ -11,16 +11,16 @@ type VoteProductUseCase struct {
 	repo repository.SessionRepository
 }
 
-func NewVoteProductUseCase(repo repository.SessionRepository) *VoteProductUseCase {
-	return &VoteProductUseCase{
-		repo: repo,
-	}
-}
-
 type VoteProductRequest struct {
 	SessionID string
 	ProductID string
 	UserID    string
+}
+
+func NewVoteProductUseCase(repo repository.SessionRepository) *VoteProductUseCase {
+	return &VoteProductUseCase{
+		repo: repo,
+	}
 }
 
 func (uc *VoteProductUseCase) Execute(ctx context.Context, req VoteProductRequest) (bool, error) {
