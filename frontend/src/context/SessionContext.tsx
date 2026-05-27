@@ -1,28 +1,13 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useWebSocket, WSMessage } from '../hooks/useWebSocket.ts';
-
-export interface Product {
-  id: string;
-  title: string;
-  price: number;
-  thumbnail: string;
-  votes: string[];
-  approved: boolean;
-}
-
-export interface SessionState {
-  id: string;
-  participants: string[];
-  products: { [key: string]: Product };
-  status: string;
-  approvedProductID?: string; 
-}
+import { SessionState, Product } from '../types';
+import { sessionService } from '../services/sessionService.ts';
 
 interface SessionContextType {
   session: SessionState | null;
   userID: string;
-  createRoom: (userId: string) => void;
-  joinRoom: (sessionId: string, userId: string) => void;
+  createRoom: (userId: string) => Promise<void>;
+  joinRoom: (sessionId: string, userId: string) => Promise<void>;
   voteProduct: (productId: string) => void;
 }
 
@@ -83,49 +68,37 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const createRoom = async (userId: string) => {
     setUserID(userId);
-    try {
-      const mockSessionId = "MELI-" + Math.floor(1000 + Math.random() * 9000);
-      
-      const initialSession: SessionState = {
-        id: mockSessionId,
+    const realSession = await sessionService.createRoomInBackend(userId);
+    setSession(realSession);
+
+    sendMessage({ type: 'JOIN', session_id: realSession.id, user_id: userId });
+  };
+
+  const joinRoom = async (sessionId: string, userId: string) => {
+    setUserID(userId);
+    
+    const backendSession = await sessionService.getRoomFromBackend(sessionId);
+    
+    if (backendSession) {
+      setSession(backendSession);
+    } else {
+      setSession({
+        id: sessionId,
         participants: [userId],
         products: {
           "prod_cafetera": {
             id: "prod_cafetera",
-            title: "Cafetera de Claudia",
-            price: 90000,
+            title: "Cafetera Expreso Moulinex Dolce Gusto Genio S",
+            price: 135000,
             thumbnail: "https://http2.mlstatic.com/D_NQ_NP_614741-MLA46132470650_052021-O.webp",
             votes: [],
             approved: false
           }
         },
         status: "ACTIVE"
-      };
-      
-      setSession(initialSession);
-      sendMessage({ type: 'JOIN', session_id: mockSessionId, user_id: userId });
-    } catch (err) {
-      console.error("Error al crear sala:", err);
+      });
     }
-  };
 
-  const joinRoom = (sessionId: string, userId: string) => {
-    setUserID(userId);
-    setSession({
-      id: sessionId,
-      participants: [userId],
-      products: {
-        "prod_cafetera": {
-          id: "prod_cafetera",
-          title: "Cafetera de Claudia",
-          price: 90000,
-          thumbnail: "https://http2.mlstatic.com/D_NQ_NP_614741-MLA46132470650_052021-O.webp",
-          votes: [],
-          approved: false
-        }
-      },
-      status: "ACTIVE"
-    });
     sendMessage({ type: 'JOIN', session_id: sessionId, user_id: userId });
   };
 
