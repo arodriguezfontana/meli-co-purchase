@@ -9,10 +9,11 @@ var (
 )
 
 type Session struct {
-	ID           string              `json:"id"`
-	Participants []string            `json:"participants"`
-	Products     map[string]*Product `json:"products"`
-	Status       string              `json:"status"`
+	ID             string              `json:"id"`
+	Participants   []string            `json:"participants"`
+	Products       map[string]*Product `json:"products"`
+	Status         string              `json:"status"`
+	CurrentPayment *SplitPayment       `json:"current_payment"`
 }
 
 func NewSession(id string, creatorID string) *Session {
@@ -81,4 +82,20 @@ func (s *Session) VoteProduct(productID string, userID string) (bool, error) {
 	}
 
 	return product.Approved, nil
+}
+
+func (s *Session) InitCheckout(productID string) error {
+	if s.Status != "ACTIVE" {
+		return ErrSessionNotActive
+	}
+	product, exists := s.Products[productID]
+	if !exists {
+		return ErrProductNotFound
+	}
+	if !product.Approved {
+		return errors.New("el producto debe estar aprobado para ir a checkout")
+	}
+
+	s.CurrentPayment = NewSplitPayment(product.ID, product.Price, s.Participants)
+	return nil
 }
