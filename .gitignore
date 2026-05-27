@@ -1,0 +1,17 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+__debug_bin
+bin/
+dist/
+
+node_modules/
+.pnpm-store/
+
+.env
+.env.local
+
+.DS_Store
+Thumbs.db
