@@ -1,4 +1,7 @@
 import React from 'react';
+import logoML from '../assets/logoml.png';
+import logoMLTX from '../assets/logomltx.png';
+import logoMP from '../assets/logomp.png';
 
 interface NavbarProps {
   roomID?: string;
@@ -7,13 +10,35 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ roomID, isCheckout }) => {
   return (
-    <header className="bg-[#FFF159] px-5 py-3 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] flex justify-between items-center font-sans">
-      <div className="text-xl font-bold text-[#333]">
-        Mercado <span className={isCheckout ? "text-[#2D3277]" : "text-[#2D3277]"}>{isCheckout ? 'Pago' : 'Libre'}</span>
-        {!isCheckout && <span className="text-xs font-light bg-[#2D3277] text-white px-1.5 py-0.5 rounded ml-1.5">Co-Compra</span>}
+    <header className="bg-[#FFF159] px-5 py-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] flex justify-between items-center font-sans">
+      <div className="flex items-center">
+        {isCheckout ? (
+          <img
+            src={logoMP}
+            alt="Mercado Pago"
+            className="h-9 w-auto object-contain"
+          />
+        ) : (
+          <div className="flex items-center gap-2">
+            <img
+              src={logoML}
+              alt="Mercado Libre"
+              className="h-9 w-auto object-contain"
+            />
+            <img
+              src={logoMLTX}
+              alt="Mercado Pago"
+              className="h-9 w-auto object-contain"
+            />
+            <span className="text-xs ml-3 font-semibold bg-[#2D3277] text-white px-2 py-0.5 rounded shadow-sm">
+              Co-Compra
+            </span>
+          </div>
+        )}
       </div>
+
       {roomID && (
-        <div className="text-sm text-[#333] bg-black/5 px-3 py-1 rounded font-semibold">
+        <div className="text-sm text-white bg-[#2D3277] px-3 py-1 rounded font-semibold backdrop-blur-sm">
           {isCheckout ? `Sala: ${roomID}` : `Sala activa: ${roomID}`}
         </div>
       )}

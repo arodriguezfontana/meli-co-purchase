@@ -26,18 +26,17 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
     <div className="font-sans text-[#333]">
       <div className="bg-white px-5 py-3 border-b border-[#E0E0E0] text-sm text-[#666]">
         <div className="max-w-[1000px] mx-auto">
-          👥 Amigos en la sala: <strong className="text-gray-800">{participants.join(', ')}</strong> (Total: {participants.length})
+          Personas en la sala: <strong className="text-gray-800">{participants.join(', ')}</strong> (Total: {participants.length})
         </div>
       </div>
 
       <main className="max-w-[1000px] mx-auto mt-8 px-5 grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-5">
-        {/* Tarjeta Producto MeLi */}
         <div className="bg-white rounded p-8 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] flex flex-col sm:flex-row">
           <div className="w-[250px] mx-auto sm:mr-8 flex justify-center items-center mb-5 sm:mb-0">
             <img src={product.thumbnail} alt={product.title} className="max-w-full max-h-[250px] object-contain" />
           </div>
           <div className="flex-1">
-            <span className="text-xs text-[#666]">Nuevo | Sugerido para el regalo grupal</span>
+            <span className="text-xs text-[#666]">Sugerido para la compra grupal</span>
             <h1 className="text-xl font-semibold mt-2 mb-3 text-[#333]">{product.title}</h1>
             
             <div className="text-3xl font-light mb-5">
@@ -60,7 +59,7 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
                 disabled={yaVote}
                 className={`w-full py-3.5 text-base font-semibold rounded-md transition-colors duration-200 ${yaVote ? 'bg-[#E1E1E1] text-[#999] cursor-not-allowed' : 'bg-[#3483FA] text-white cursor-pointer hover:bg-[#1e6be6]'}`}
               >
-                {yaVote ? '✓ Ya votaste este producto' : 'Votar este producto (Dar Like)'}
+                {yaVote ? 'Ya votaste este producto' : 'Votar este producto'}
               </button>
             </div>
           </div>
