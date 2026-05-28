@@ -26,15 +26,18 @@ export default function App() {
     );
   }
 
-  const cafetera = session.products["prod_cafetera"];
+  const productsMap = session.products || (session as any).Products || {};
+  const approvedID = session.approvedProductID || (session as any).ApprovedProductID;
 
-  if (session.approvedProductID) {
+  if (approvedID) {
+    const approvedProduct = productsMap[approvedID];
+
     return (
       <div className="bg-[#EBEBEB] min-h-screen">
         <Navbar roomID={session.id} isCheckout={true} />
         <CheckoutView 
-          participants={session.participants}
-          product={cafetera}
+          participants={session.participants || (session as any).Participants}
+          product={approvedProduct}
           userID={userID}
         />
       </div>
@@ -46,8 +49,8 @@ export default function App() {
       <Navbar roomID={session.id} isCheckout={false} />
       <VotingView 
         roomID={session.id}
-        participants={session.participants}
-        product={cafetera}
+        participants={session.participants || (session as any).Participants || []}
+        products={productsMap} 
         userID={userID}
         onVote={voteProduct}
       />

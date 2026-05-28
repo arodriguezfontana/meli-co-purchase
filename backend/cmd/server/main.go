@@ -13,8 +13,6 @@ import (
 )
 
 func main() {
-	log.Println("Iniciando Meli Co-Purchase Backend...")
-
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
@@ -25,21 +23,25 @@ func main() {
 	defer cancel()
 
 	if err := redisClient.Ping(ctx).Err(); err != nil {
-		log.Printf("ADVERTENCIA: No se pudo conectar a Redis (%v). El repositorio real fallará si no está corriendo Docker/Redis local.", err)
+		log.Printf("No se pudo conectar a Redis (%v). El repositorio real fallará si no está corriendo Docker/Redis local.", err)
 	} else {
 		log.Println("Conexión a Redis establecida exitosamente en memoria RAM.")
 	}
 
 	redisRepo := database.NewRedisSessionRepository(redisClient, 2*time.Hour)
+
 	voteUseCase := usecases.NewVoteProductUseCase(redisRepo)
+	createUseCase := usecases.NewCreateSessionUseCase(redisRepo)
+
 	wsHandler := delivery.NewWebSocketHandler(voteUseCase)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", wsHandler.HandleConnection)
-	
+	delivery.SetupRoutes(mux, createUseCase, redisRepo, wsHandler)
+
 	serverAddr := ":8080"
-	
+
 	log.Printf("Servidor corriendo y escuchando en el puerto %s", serverAddr)
+	log.Printf("Endpoints HTTP listos en: http://localhost%s/sessions", serverAddr)
 	log.Printf("Endpoint de WebSocket listo en: ws://localhost%s/ws", serverAddr)
 
 	err := http.ListenAndServe(serverAddr, mux)
