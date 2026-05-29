@@ -15,7 +15,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
   return (
     <main className="max-w-[450px] mx-auto mt-10 px-5 font-sans">
       <div className="bg-white p-8 rounded-md shadow-[0_1px_3px_0_rgba(0,0,0,0.15)]">
-        <h2 className="text-600 text-xl font-semibold text-[#333]">Bienvenido a Co-Compra!</h2>
+        <h2 className="text-600 text-xl font-semibold text-[#333]">¡Bienvenido a Co-Compra!</h2>
         
         <div className="text-[#999] mt-2 mb-6 text-sm">Realizá una compra en grupo y compartí el costo.</div>
 
@@ -34,8 +34,8 @@ export const LoginView: React.FC<LoginViewProps> = ({
         <button 
           onClick={onCreateRoom}
           disabled={!inputUserID}
-          className={`w-full text-white bg-[#3483FA] py-3 text-base font-semibold rounded-md transition-colors duration-200 mb-5 ${inputUserID ? 'cursor-pointer hover:bg-[#1e6be6]' : 'cursor-not-allowed opacity-50'}`}
-        >
+          className={`w-full bg-transparent text-[#3483FA] border border-[#3483FA] py-3 text-base font-semibold rounded-md transition-colors duration-200 ${inputUserID ? 'cursor-pointer hover:bg-[#3483FA]/5' : 'cursor-not-allowed opacity-50'}`}
+          >
           Crear nueva sala
         </button>
 
@@ -55,7 +55,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
         <button 
           onClick={onJoinRoom}
           disabled={!inputUserID || !inputRoomID}
-          className={`w-full bg-transparent text-[#3483FA] border border-[#3483FA] py-3 text-base font-semibold rounded-md transition-colors duration-200 ${(inputUserID && inputRoomID) ? 'cursor-pointer hover:bg-[#3483FA]/5' : 'cursor-not-allowed opacity-50'}`}
+          className={`w-full text-white bg-[#3483FA] py-3 text-base font-semibold rounded-md transition-colors duration-200 mb-5 ${inputUserID && inputRoomID ? 'cursor-pointer hover:bg-[#1e6be6]' : 'cursor-not-allowed opacity-50'}`}
         >
           Unirse a sala existente
         </button>

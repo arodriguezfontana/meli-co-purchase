@@ -12,7 +12,7 @@ export default function App() {
 
   if (!session) {
     return (
-      <div className="bg-[#EBEBEB] min-h-screen">
+      <div className="bg-[#fafafa] min-h-screen">
         <Navbar />
         <LoginView 
           inputUserID={inputUserID}

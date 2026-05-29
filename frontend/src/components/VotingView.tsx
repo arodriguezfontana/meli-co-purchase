@@ -50,7 +50,7 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
         
         <div className="bg-white rounded p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)]">
           <div className="border-b border-[#EEE] pb-3 mb-5">
-            <h2 className="text-lg font-semibold text-[#333]">Elegí productos en Mercado Libre</h2>
+            <h2 className="text-lg font-semibold text-[#333]">Sugerí productos</h2>
             <p className="text-xs text-[#999] mt-0.5">Seleccioná ítems para sumarlos a la lista de compra grupal</p>
           </div>
           
@@ -79,7 +79,7 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
                         : 'bg-[#FFF159] text-[#333] hover:bg-[#E6D950] cursor-pointer shadow-sm'
                     }`}
                   >
-                    {yaSugerido ? 'Agregado a la lista' : 'Sugerir para Co-Compra'}
+                    {yaSugerido ? 'Agregado a la lista' : 'Sugerir'}
                   </button>
                 </div>
               );
@@ -90,7 +90,7 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
         <div className="flex flex-col gap-6">
           <div className="bg-white rounded p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)]">
             <div className="border-b border-[#EEE] pb-3 mb-5">
-              <h2 className="text-lg font-semibold text-[#333]">Lista de Compra Grupal 🚀</h2>
+              <h2 className="text-lg font-semibold text-[#333]">Lista de Compra Grupal</h2>
               <p className="text-xs text-[#999] mt-0.5">Votá los productos que querés comprar en grupo</p>
             </div>
 
@@ -136,11 +136,11 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
                             estaBloqueado
                               ? 'bg-amber-100 text-amber-800 border-amber-200 cursor-not-allowed'
                               : yaVote 
-                                ? 'bg-[#3483FA] text-white border-transparent hover:bg-blue-600 cursor-pointer shadow-inner brightness-90' // Visualmente marcado, pero clickeable para sacar voto
+                                ? 'bg-[#3483FA] text-white border-transparent hover:bg-blue-600 cursor-pointer shadow-inner brightness-90'
                                 : 'bg-white text-[#3483FA] border-[#3483FA] hover:bg-blue-50 cursor-pointer'
                           }`}
                         >
-                          {estaBloqueado ? 'Seleccionado' : yaVote ? '✓ Votado' : 'Votar'}
+                          {estaBloqueado ? 'Seleccionado' : yaVote ? 'Votado' : 'Votar'}
                         </button>
                       </div>
 
@@ -175,11 +175,11 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
                   disabled={imReady}
                   className={`w-full py-3 rounded-md text-sm font-semibold transition-all shadow-sm ${
                     imReady
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 cursor-not-allowed text-center'
+                      ? 'bg-gray-100 text-gray-800 border border-gray-100 cursor-not-allowed text-center'
                       : 'bg-[#009EE3] text-white hover:bg-blue-500 cursor-pointer'
                   }`}
                 >
-                  {imReady ? '✓ Esperando al resto de los integrantes...' : 'Listo para pagar'}
+                  {imReady ? 'Esperando al resto de los integrantes' : 'Listo para pagar'}
                 </button>
                 
                 {readyUsers.length > 0 && (
