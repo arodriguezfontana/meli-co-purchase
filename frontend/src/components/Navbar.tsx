@@ -10,13 +10,17 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ roomID, isCheckout }) => {
   return (
-    <header className="bg-[#FFF159] px-5 py-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] flex justify-between items-center font-sans">
+    <header 
+      className={`px-5 py-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)] flex justify-between items-center font-sans transition-colors duration-300 ${
+        isCheckout ? 'bg-[#009EE3]' : 'bg-[#FFF159]'
+      }`}
+    >
       <div className="flex items-center">
         {isCheckout ? (
           <img
             src={logoMP}
             alt="Mercado Pago"
-            className="h-9 w-auto object-contain"
+            className="h-9 w-auto object-contain" 
           />
         ) : (
           <div className="flex items-center gap-2">
