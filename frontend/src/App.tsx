@@ -28,16 +28,15 @@ export default function App() {
 
   const productsMap = session.products || (session as any).Products || {};
   const approvedID = session.approvedProductID || (session as any).ApprovedProductID;
+  const isGroupCheckout = approvedID === "GROUP_CHECKOUT";
 
-  if (approvedID) {
-    const approvedProduct = productsMap[approvedID];
-
+  if (isGroupCheckout) {
     return (
       <div className="bg-[#EBEBEB] min-h-screen">
         <Navbar roomID={session.id} isCheckout={true} />
         <CheckoutView 
-          participants={session.participants || (session as any).Participants}
-          product={approvedProduct}
+          participants={session.participants || (session as any).Participants || []}
+          products={productsMap} 
           userID={userID}
         />
       </div>

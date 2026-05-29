@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/abril/meli-co-purchase/internal/domain/repository"
 	"github.com/abril/meli-co-purchase/internal/usecases"
 	"github.com/gorilla/websocket"
 )
@@ -18,24 +19,26 @@ var upgrader = websocket.Upgrader{
 }
 
 type WSMessage struct {
-	Type      string   `json:"type"`
-	SessionID string   `json:"session_id"`
-	UserID    string   `json:"user_id"`
-	ProductID string   `json:"product_id,omitempty"`
-	ReadyUsers []string `json:"ready_users,omitempty"` 
+	Type       string   `json:"type"`
+	SessionID  string   `json:"session_id"`
+	UserID     string   `json:"user_id"`
+	ProductID  string   `json:"product_id,omitempty"`
+	ReadyUsers []string `json:"ready_users,omitempty"`
 }
 
 type WebSocketHandler struct {
 	voteUseCase  *usecases.VoteProductUseCase
-	readyUseCase *usecases.ReadySessionUseCase 
+	readyUseCase *usecases.ReadySessionUseCase
+	repo         repository.SessionRepository
 	rooms        map[string][]*websocket.Conn
 	roomsMutex   sync.RWMutex
 }
 
-func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase, readyUC *usecases.ReadySessionUseCase) *WebSocketHandler {
+func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase, readyUC *usecases.ReadySessionUseCase, repo repository.SessionRepository) *WebSocketHandler {
 	return &WebSocketHandler{
 		voteUseCase:  voteUC,
 		readyUseCase: readyUC,
+		repo:         repo,
 		rooms:        make(map[string][]*websocket.Conn),
 	}
 }
@@ -65,8 +68,16 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 		switch msg.Type {
 		case "JOIN":
 			h.addConnectionToRoom(msg.SessionID, conn)
+
+			session, err := h.repo.FindByID(context.Background(), msg.SessionID)
+
+			if err == nil && session != nil {
+				_ = session.AddParticipant(msg.UserID)
+				_ = h.repo.Save(context.Background(), session)
+			}
+
 			h.broadcastToRoom(msg.SessionID, WSMessage{
-				Type:      "USER_JOINED",
+				Type:      "ROOM_STRUCTURE_CHANGED",
 				SessionID: msg.SessionID,
 				UserID:    msg.UserID,
 			})
@@ -85,7 +96,7 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 			}
 
 			h.broadcastToRoom(msg.SessionID, WSMessage{
-				Type:      "VOTE_UPDATED",
+				Type:      "ROOM_STRUCTURE_CHANGED",
 				SessionID: msg.SessionID,
 				UserID:    msg.UserID,
 				ProductID: msg.ProductID,
@@ -105,7 +116,7 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 				})
 			} else {
 				h.broadcastToRoom(msg.SessionID, WSMessage{
-					Type:      "READY_STATUS_UPDATED",
+					Type:      "ROOM_STRUCTURE_CHANGED",
 					SessionID: msg.SessionID,
 					UserID:    msg.UserID,
 				})

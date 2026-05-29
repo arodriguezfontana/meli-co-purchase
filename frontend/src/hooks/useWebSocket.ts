@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 export interface WSMessage {
-  type: 'JOIN' | 'VOTE' | 'USER_JOINED' | 'VOTE_UPDATED' | 'PRODUCT_APPROVED';
+  type: 'JOIN' | 'VOTE' | 'USER_JOINED' | 'VOTE_UPDATED' | 'PRODUCT_APPROVED' | 'READY' | 'READY_STATUS_UPDATED' | 'GROUP_CHECKOUT_TRIGGERED' | 'READY_RESET' | 'PRODUCT_SUGGESTED';
   session_id: string;
   user_id: string;
   product_id?: string;
