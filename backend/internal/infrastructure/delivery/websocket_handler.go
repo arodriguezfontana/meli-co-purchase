@@ -18,22 +18,25 @@ var upgrader = websocket.Upgrader{
 }
 
 type WSMessage struct {
-	Type      string `json:"type"`
-	SessionID string `json:"session_id"`
-	UserID    string `json:"user_id"`
-	ProductID string `json:"product_id,omitempty"`
+	Type      string   `json:"type"`
+	SessionID string   `json:"session_id"`
+	UserID    string   `json:"user_id"`
+	ProductID string   `json:"product_id,omitempty"`
+	ReadyUsers []string `json:"ready_users,omitempty"` 
 }
 
 type WebSocketHandler struct {
-	voteUseCase *usecases.VoteProductUseCase
-	rooms       map[string][]*websocket.Conn
-	roomsMutex  sync.RWMutex
+	voteUseCase  *usecases.VoteProductUseCase
+	readyUseCase *usecases.ReadySessionUseCase 
+	rooms        map[string][]*websocket.Conn
+	roomsMutex   sync.RWMutex
 }
 
-func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase) *WebSocketHandler {
+func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase, readyUC *usecases.ReadySessionUseCase) *WebSocketHandler {
 	return &WebSocketHandler{
-		voteUseCase: voteUC,
-		rooms:       make(map[string][]*websocket.Conn),
+		voteUseCase:  voteUC,
+		readyUseCase: readyUC,
+		rooms:        make(map[string][]*websocket.Conn),
 	}
 }
 
@@ -87,6 +90,26 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 				UserID:    msg.UserID,
 				ProductID: msg.ProductID,
 			})
+
+		case "READY":
+			allReady, err := h.readyUseCase.Execute(context.Background(), msg.SessionID, msg.UserID)
+			if err != nil {
+				log.Printf("Error al procesar estado de listo: %v", err)
+				continue
+			}
+
+			if allReady {
+				h.broadcastToRoom(msg.SessionID, WSMessage{
+					Type:      "GROUP_CHECKOUT_TRIGGERED",
+					SessionID: msg.SessionID,
+				})
+			} else {
+				h.broadcastToRoom(msg.SessionID, WSMessage{
+					Type:      "READY_STATUS_UPDATED",
+					SessionID: msg.SessionID,
+					UserID:    msg.UserID,
+				})
+			}
 		}
 	}
 }

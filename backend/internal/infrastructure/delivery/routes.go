@@ -139,6 +139,7 @@ func handleSuggestProduct(w http.ResponseWriter, r *http.Request, roomID string,
 		ProductID: targetProduct.ID,
 	})
 
+	wsHandler.broadcastToRoom(roomID, WSMessage{Type: "READY_RESET", SessionID: roomID})
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(session)
 }

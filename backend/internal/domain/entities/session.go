@@ -14,6 +14,7 @@ type Session struct {
 	Products       map[string]*Product `json:"products"`
 	Status         string              `json:"status"`
 	CurrentPayment *SplitPayment       `json:"current_payment"`
+	ReadyUsers     []string            `json:"ready_users"`
 }
 
 func NewSession(id string, creatorID string) *Session {
@@ -22,6 +23,7 @@ func NewSession(id string, creatorID string) *Session {
 		Participants: []string{creatorID},
 		Products:     make(map[string]*Product),
 		Status:       "ACTIVE",
+		ReadyUsers:   []string{},
 	}
 }
 
@@ -49,6 +51,8 @@ func (s *Session) AddProduct(p *Product) error {
 		p.Votes = []string{}
 		p.Approved = false
 		s.Products[p.ID] = p
+
+		s.ReadyUsers = []string{}
 	}
 	return nil
 }
@@ -103,4 +107,24 @@ func (s *Session) InitCheckout(productID string) error {
 
 	s.CurrentPayment = NewSplitPayment(product.ID, product.Price, s.Participants)
 	return nil
+}
+
+func (s *Session) UserIsReady(userID string) bool {
+	alreadyReady := false
+	for _, id := range s.ReadyUsers {
+		if id == userID {
+			alreadyReady = true
+			break
+		}
+	}
+	if !alreadyReady {
+		s.ReadyUsers = append(s.ReadyUsers, userID)
+	}
+
+	if len(s.ReadyUsers) == len(s.Participants) {
+		s.Status = "COMPLETED"
+		return true
+	}
+
+	return false
 }
