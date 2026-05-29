@@ -33,9 +33,9 @@ func main() {
 	voteUseCase := usecases.NewVoteProductUseCase(redisRepo)
 	createUseCase := usecases.NewCreateSessionUseCase(redisRepo)
 	readyUseCase := usecases.NewReadySessionUseCase(redisRepo)
+	payUseCase := usecases.NewPaySplitUseCase(redisRepo)
 
-	wsHandler := delivery.NewWebSocketHandler(voteUseCase, readyUseCase, redisRepo)
-
+	wsHandler := delivery.NewWebSocketHandler(voteUseCase, readyUseCase, payUseCase, redisRepo)
 	mux := http.NewServeMux()
 	delivery.SetupRoutes(mux, createUseCase, redisRepo, wsHandler)
 

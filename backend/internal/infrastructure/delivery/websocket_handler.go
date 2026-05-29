@@ -29,15 +29,17 @@ type WSMessage struct {
 type WebSocketHandler struct {
 	voteUseCase  *usecases.VoteProductUseCase
 	readyUseCase *usecases.ReadySessionUseCase
+	payUseCase   *usecases.PaySplitUseCase
 	repo         repository.SessionRepository
 	rooms        map[string][]*websocket.Conn
 	roomsMutex   sync.RWMutex
 }
 
-func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase, readyUC *usecases.ReadySessionUseCase, repo repository.SessionRepository) *WebSocketHandler {
+func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase, readyUC *usecases.ReadySessionUseCase, payUC *usecases.PaySplitUseCase, repo repository.SessionRepository) *WebSocketHandler {
 	return &WebSocketHandler{
 		voteUseCase:  voteUC,
 		readyUseCase: readyUC,
+		payUseCase:   payUC,
 		repo:         repo,
 		rooms:        make(map[string][]*websocket.Conn),
 	}
@@ -112,6 +114,25 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 			if allReady {
 				h.broadcastToRoom(msg.SessionID, WSMessage{
 					Type:      "GROUP_CHECKOUT_TRIGGERED",
+					SessionID: msg.SessionID,
+				})
+			} else {
+				h.broadcastToRoom(msg.SessionID, WSMessage{
+					Type:      "ROOM_STRUCTURE_CHANGED",
+					SessionID: msg.SessionID,
+					UserID:    msg.UserID,
+				})
+			}
+		case "PAY":
+			allPaid, err := h.payUseCase.Execute(context.Background(), msg.SessionID, msg.UserID)
+			if err != nil {
+				log.Printf("Error al procesar pago: %v", err)
+				continue
+			}
+
+			if allPaid {
+				h.broadcastToRoom(msg.SessionID, WSMessage{
+					Type:      "GROUP_COMPRA_SUCCESSFUL",
 					SessionID: msg.SessionID,
 				})
 			} else {

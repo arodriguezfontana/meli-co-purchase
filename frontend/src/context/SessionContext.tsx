@@ -11,6 +11,7 @@ interface SessionContextType {
   voteProduct: (productId: string) => void;
   suggestProduct: (productId: string) => Promise<void>;
   sendReadyStatus: () => void;
+  sendPayStatus: () => void;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -50,6 +51,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
           }
         } catch (error) {
           console.error('Error al gatillar checkout grupal:', error);
+        }
+        break;
+
+      case 'GROUP_COMPRA_SUCCESSFUL':
+        try {
+          const successSession = await sessionService.getRoomFromBackend(sessionId);
+          if (successSession) {
+            successSession.status = "SUCCESS"; 
+            setSession(successSession);
+          }
+        } catch (error) {
+          console.error('Error al sincronizar éxito de compra:', error);
         }
         break;
 
@@ -106,8 +119,13 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     sendMessage({ type: 'READY', session_id: session.id, user_id: userID });
   };
 
+  const sendPayStatus = () => {
+    if (!session) return;
+    sendMessage({ type: 'PAY', session_id: session.id, user_id: userID });
+  };
+
   return (
-    <SessionContext.Provider value={{ session, userID, createRoom, joinRoom, voteProduct, suggestProduct, sendReadyStatus }}>
+    <SessionContext.Provider value={{ session, userID, createRoom, joinRoom, voteProduct, suggestProduct, sendReadyStatus, sendPayStatus }}>
       {children}
     </SessionContext.Provider>
   );

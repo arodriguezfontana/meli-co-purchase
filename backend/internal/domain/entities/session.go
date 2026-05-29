@@ -15,6 +15,7 @@ type Session struct {
 	Status         string              `json:"status"`
 	CurrentPayment *SplitPayment       `json:"current_payment"`
 	ReadyUsers     []string            `json:"ready_users"`
+	PaidUsers      []string            `json:"paid_users"`
 }
 
 func NewSession(id string, creatorID string) *Session {
@@ -24,6 +25,7 @@ func NewSession(id string, creatorID string) *Session {
 		Products:     make(map[string]*Product),
 		Status:       "ACTIVE",
 		ReadyUsers:   []string{},
+		PaidUsers:    []string{},
 	}
 }
 
@@ -123,6 +125,26 @@ func (s *Session) UserIsReady(userID string) bool {
 
 	if len(s.ReadyUsers) == len(s.Participants) {
 		s.Status = "COMPLETED"
+		return true
+	}
+
+	return false
+}
+
+func (s *Session) RegisterPayment(userID string) bool {
+	alreadyPaid := false
+	for _, id := range s.PaidUsers {
+		if id == userID {
+			alreadyPaid = true
+			break
+		}
+	}
+	if !alreadyPaid {
+		s.PaidUsers = append(s.PaidUsers, userID)
+	}
+
+	if len(s.PaidUsers) == len(s.Participants) {
+		s.Status = "SUCCESS"
 		return true
 	}
 

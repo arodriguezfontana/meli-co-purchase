@@ -27,10 +27,10 @@ export default function App() {
   }
 
   const productsMap = session.products || (session as any).Products || {};
-  const approvedID = session.approvedProductID || (session as any).ApprovedProductID;
-  const isGroupCheckout = approvedID === "GROUP_CHECKOUT";
+  const salaStatus = session.status || (session as any).Status;
+  const yaEstaEnCheckout = salaStatus === "COMPLETED" || salaStatus === "SUCCESS";
 
-  if (isGroupCheckout) {
+  if (yaEstaEnCheckout) {
     return (
       <div className="bg-[#EBEBEB] min-h-screen">
         <Navbar roomID={session.id} isCheckout={true} />
