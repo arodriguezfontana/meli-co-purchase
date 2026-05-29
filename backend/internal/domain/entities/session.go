@@ -74,10 +74,15 @@ func (s *Session) VoteProduct(productID string, userID string) (bool, error) {
 		return false, ErrProductNotFound
 	}
 
-	product.AddVote(userID)
+	if product.Approved {
+		return true, nil
+	}
 
-	requiredVotes := float64(len(s.Participants)) / 2.0
-	if float64(len(product.Votes)) > requiredVotes {
+	product.ToggleVote(userID)
+
+	requiredVotes := (len(s.Participants) / 2) + 1
+
+	if len(product.Votes) >= requiredVotes {
 		product.Approved = true
 	}
 

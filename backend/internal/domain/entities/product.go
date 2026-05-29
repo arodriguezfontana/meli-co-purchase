@@ -92,9 +92,10 @@ var Catalog = []Product{
 	},
 }
 
-func (p *Product) AddVote(userID string) {
-	for _, id := range p.Votes {
+func (p *Product) ToggleVote(userID string) {
+	for i, id := range p.Votes {
 		if id == userID {
+			p.Votes = append(p.Votes[:i], p.Votes[i+1:]...)
 			return
 		}
 	}

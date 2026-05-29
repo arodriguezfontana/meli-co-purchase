@@ -75,7 +75,7 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 				UserID:    msg.UserID,
 			}
 
-			isApproved, err := h.voteUseCase.Execute(context.Background(), req)
+			_, err := h.voteUseCase.Execute(context.Background(), req)
 			if err != nil {
 				log.Printf("Error procesando voto en el negocio: %v", err)
 				continue
@@ -87,14 +87,6 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 				UserID:    msg.UserID,
 				ProductID: msg.ProductID,
 			})
-
-			if isApproved {
-				h.broadcastToRoom(msg.SessionID, WSMessage{
-					Type:      "PRODUCT_APPROVED",
-					SessionID: msg.SessionID,
-					ProductID: msg.ProductID,
-				})
-			}
 		}
 	}
 }
