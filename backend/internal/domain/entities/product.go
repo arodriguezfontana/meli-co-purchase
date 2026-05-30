@@ -61,7 +61,7 @@ var Catalog = []Product{
 	{
 		ID:        "meli_compu",
 		Title:     "Notebook Lenovo IdeaPad 1 con Intel Celeron, 12GB RAM y 128GB SSD",
-		Price:     28000,
+		Price:     560000,
 		Thumbnail: "https://http2.mlstatic.com/D_Q_NP_761852-MLA100001156811_112025-F.webp",
 		Votes:     []string{},
 		Approved:  false,
