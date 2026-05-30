@@ -32,7 +32,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ participants, produc
   return (
     <main className="max-w-[600px] mx-auto mt-10 px-5 font-sans text-[#333]">
       <div className="bg-white p-8 rounded-md mb-10 shadow-[0_1px_3px_0_rgba(0,0,0,0.15)]">
-        
+
         <div className="text-center mb-6">
           {esCompraExitosa ? (
             <span className="bg-[#00A650] text-white px-4 py-2 rounded-full text-xs font-bold animate-bounce block w-fit mx-auto shadow-sm">
@@ -43,10 +43,12 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ participants, produc
               CHECKOUT EN PROGRESO
             </span>
           )}
-          <h2 className="text-2xl font-semibold mt-4 text-[#333]">Checkout: Pago Dividido</h2>
+          <h2 className="text-2xl font-semibold mt-4 text-[#333]">{esCompraExitosa
+            ? "¡Felicidades! Todos realiaron el pago."
+            : "Pago dividio en proceso"}</h2>
           <p className="text-[#666] text-sm mt-1">
-            {esCompraExitosa 
-              ? "¡Felicidades! Todos realiaron el pago. El pedido ya está en camino." 
+            {esCompraExitosa
+              ? "La compra fue realizada con éxito. El pedido ya está en camino."
               : "Cada participante debe liberar su pago para finalizar la compra."}
           </p>
         </div>
@@ -76,7 +78,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ participants, produc
         <div className="flex flex-col gap-3 mb-6">
           {participants.map((p) => {
             const yaPagoEsteUser = paidUsers.includes(p);
-            
+
             return (
               <div key={p} className={`flex justify-between items-center p-3 bg-[#F7F7F7] rounded border-l-4 transition-all ${yaPagoEsteUser ? 'border-[#00A650] bg-emerald-50/20' : 'border-[#FF5A5F]'}`}>
                 <div>
@@ -96,23 +98,22 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ participants, produc
         </div>
 
         {esCompraExitosa ? (
-          <div className="bg-green-100 border border-green-200 p-4 rounded-md text-center text-emerald-800 font-medium text-sm">
-            ¡Listo! El total de la orden fue cubierto. ¡Gracias por comprar juntos! <br/> ID de tracking: {session?.id}.
+          <div className="bg-green-100 border border-green-200 p-4 rounded-md text-center text-green-800 font-medium text-sm">
+            El total de la orden fue cubierto. ¡Gracias por comprar juntos! <br /> ID de tracking: {session?.id}.
           </div>
         ) : (
           <div>
-            <button 
+            <button
               onClick={sendPayStatus}
               disabled={imPaid}
-              className={`w-full py-3.5 rounded-md font-semibold text-base transition-all shadow-sm text-center ${
-                imPaid
+              className={`w-full py-3.5 rounded-md font-semibold text-base transition-all shadow-sm text-center ${imPaid
                   ? 'bg-green-100 text-green-800 border border-green-100 cursor-not-allowed'
                   : 'bg-[#009EE3] text-white hover:bg-blue-600 cursor-pointer'
-              }`}
+                }`}
             >
               {imPaid ? 'Tu parte ya fue liberada. Esperando al resto.' : 'Liberar mi pago en Mercado Pago'}
             </button>
-            
+
             <div className="bg-[#F5F5F5] p-4 rounded-md text-center text-[#666] text-xs mt-4">
               Faltan confirmar <strong className="text-gray-800">{participants.length - paidUsers.length}</strong> integrantes.
             </div>

@@ -10,6 +10,15 @@ export default function App() {
   const [inputUserID, setInputUserID] = useState('');
   const [inputRoomID, setInputRoomID] = useState('');
 
+  const salaStatus = session?.status || (session as any)?.Status || "ACTIVE";
+  const productsMap = session?.products || (session as any)?.Products || {};
+  const yaEstaEnCheckout = salaStatus === "COMPLETED" || salaStatus === "SUCCESS";
+  const esCompraExitosa = salaStatus === "SUCCESS";
+
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [salaStatus]);
+
   if (!session) {
     return (
       <div className="bg-[#fafafa] min-h-screen">
@@ -26,13 +35,10 @@ export default function App() {
     );
   }
 
-  const productsMap = session.products || (session as any).Products || {};
-  const salaStatus = session.status || (session as any).Status;
-  const yaEstaEnCheckout = salaStatus === "COMPLETED" || salaStatus === "SUCCESS";
-
   if (yaEstaEnCheckout) {
     return (
-      <div className="bg-[#EBEBEB] min-h-screen">
+      <div className={`min-h-screen transition-colors duration-[1500ms] ease-in-out 'bg-[#EBEBEB]'
+      }`}>
         <Navbar roomID={session.id} isCheckout={true} />
         <CheckoutView 
           participants={session.participants || (session as any).Participants || []}

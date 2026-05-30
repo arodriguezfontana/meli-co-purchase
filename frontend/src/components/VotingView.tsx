@@ -51,7 +51,7 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
         <div className="bg-white rounded p-6 shadow-[0_1px_2px_0_rgba(0,0,0,0.1)]">
           <div className="border-b border-[#EEE] pb-3 mb-5">
             <h2 className="text-lg font-semibold text-[#333]">Sugerí productos</h2>
-            <p className="text-xs text-[#999] mt-0.5">Seleccioná ítems para sumarlos a la lista de compra grupal</p>
+            <p className="text-xs text-[#999] mt-0.5">Seleccioná ítems del catálogo para sumarlos a la lista de compra grupal</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[680px] overflow-y-auto pr-2">
@@ -157,8 +157,8 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
               {sugeridosList.length === 0 && (
                 <div className="text-center py-16 text-[#999] text-sm bg-gray-50 rounded-lg border border-dashed border-gray-300">
                   <div className="text-2xl mb-2">🛒</div>
-                  No hay productos sugeridos en esta sala.<br />
-                  ¡Elegí uno del catálogo de la izquierda para empezar!
+                  No hay productos sugeridos en esta sala. <br />
+                  ¡Elegí uno del catálogo para empezar!
                 </div>
               )}
             </div>
@@ -175,7 +175,7 @@ export const VotingView: React.FC<VotingViewProps> = ({ roomID, participants, pr
                   disabled={imReady}
                   className={`w-full py-3 rounded-md text-sm font-semibold transition-all shadow-sm ${
                     imReady
-                      ? 'bg-gray-100 text-gray-800 border border-gray-100 cursor-not-allowed text-center'
+                      ? 'bg-green-100 border border-green-200 text-green-800 cursor-not-allowed text-center'
                       : 'bg-[#009EE3] text-white hover:bg-blue-500 cursor-pointer'
                   }`}
                 >
