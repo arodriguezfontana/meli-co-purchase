@@ -40,12 +40,6 @@ export const Navbar: React.FC<NavbarProps> = ({ roomID, isCheckout }) => {
           </div>
         )}
       </div>
-
-      {roomID && (
-        <div className="text-sm text-white bg-[#2D3277] px-3 py-1 rounded font-semibold backdrop-blur-sm">
-          {isCheckout ? `Sala: ${roomID}` : `Sala activa: ${roomID}`}
-        </div>
-      )}
     </header>
   );
 };

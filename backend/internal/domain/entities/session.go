@@ -14,6 +14,8 @@ type Session struct {
 	Products       map[string]*Product `json:"products"`
 	Status         string              `json:"status"`
 	CurrentPayment *SplitPayment       `json:"current_payment"`
+	ReadyUsers     []string            `json:"ready_users"`
+	PaidUsers      []string            `json:"paid_users"`
 }
 
 func NewSession(id string, creatorID string) *Session {
@@ -22,6 +24,8 @@ func NewSession(id string, creatorID string) *Session {
 		Participants: []string{creatorID},
 		Products:     make(map[string]*Product),
 		Status:       "ACTIVE",
+		ReadyUsers:   []string{},
+		PaidUsers:    []string{},
 	}
 }
 
@@ -49,6 +53,8 @@ func (s *Session) AddProduct(p *Product) error {
 		p.Votes = []string{}
 		p.Approved = false
 		s.Products[p.ID] = p
+
+		s.ReadyUsers = []string{}
 	}
 	return nil
 }
@@ -74,10 +80,15 @@ func (s *Session) VoteProduct(productID string, userID string) (bool, error) {
 		return false, ErrProductNotFound
 	}
 
-	product.AddVote(userID)
+	if product.Approved {
+		return true, nil
+	}
 
-	requiredVotes := float64(len(s.Participants)) / 2.0
-	if float64(len(product.Votes)) > requiredVotes {
+	product.ToggleVote(userID)
+
+	requiredVotes := (len(s.Participants) / 2) + 1
+
+	if len(product.Votes) >= requiredVotes {
 		product.Approved = true
 	}
 
@@ -98,4 +109,44 @@ func (s *Session) InitCheckout(productID string) error {
 
 	s.CurrentPayment = NewSplitPayment(product.ID, product.Price, s.Participants)
 	return nil
+}
+
+func (s *Session) UserIsReady(userID string) bool {
+	alreadyReady := false
+	for _, id := range s.ReadyUsers {
+		if id == userID {
+			alreadyReady = true
+			break
+		}
+	}
+	if !alreadyReady {
+		s.ReadyUsers = append(s.ReadyUsers, userID)
+	}
+
+	if len(s.ReadyUsers) == len(s.Participants) {
+		s.Status = "COMPLETED"
+		return true
+	}
+
+	return false
+}
+
+func (s *Session) RegisterPayment(userID string) bool {
+	alreadyPaid := false
+	for _, id := range s.PaidUsers {
+		if id == userID {
+			alreadyPaid = true
+			break
+		}
+	}
+	if !alreadyPaid {
+		s.PaidUsers = append(s.PaidUsers, userID)
+	}
+
+	if len(s.PaidUsers) == len(s.Participants) {
+		s.Status = "SUCCESS"
+		return true
+	}
+
+	return false
 }
