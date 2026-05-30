@@ -31,7 +31,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({ participants, produc
 
   return (
     <main className="max-w-[600px] mx-auto mt-10 px-5 font-sans text-[#333]">
-      <div className="bg-white p-8 rounded-md shadow-[0_1px_3px_0_rgba(0,0,0,0.15)]">
+      <div className="bg-white p-8 rounded-md mb-10 shadow-[0_1px_3px_0_rgba(0,0,0,0.15)]">
         
         <div className="text-center mb-6">
           {esCompraExitosa ? (
