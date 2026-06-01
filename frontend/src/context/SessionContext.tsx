@@ -10,6 +10,8 @@ interface SessionContextType {
   joinRoom: (sessionId: string, userId: string) => Promise<void>;
   voteProduct: (productId: string) => void;
   suggestProduct: (productId: string) => Promise<void>;
+  sendReadyStatus: () => void;
+  sendPayStatus: () => void;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -24,69 +26,46 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const productId = msg.product_id || msg.ProductID;
 
     switch (msg.type) {
+      case 'ROOM_STRUCTURE_CHANGED':
       case 'USER_JOINED':
-        setSession((prev) => {
-          if (!prev) return prev;
-          if (prev.id === sessionId) {
-            if (prev.participants.includes(userId)) return prev;
-            return { ...prev, participants: [...prev.participants, userId] };
-          }
-          return prev;
-        });
-        break;
-
       case 'VOTE_UPDATED':
-        setSession((prev) => {
-          if (!prev || prev.id !== sessionId || !productId) return prev;
-          
-          const currentProduct = prev.products[productId];
-          if (!currentProduct) {
-            console.warn(`[Context] No se encontró el producto con ID: ${productId} en el estado local.`);
-            return prev;
-          }
-
-          const updatedVotes = currentProduct.votes.includes(userId)
-            ? currentProduct.votes
-            : [...currentProduct.votes, userId];
-
-          return {
-            ...prev,
-            products: {
-              ...prev.products,
-              [productId]: { ...currentProduct, votes: updatedVotes },
-            },
-          };
-        });
-        break;
-
-      case 'PRODUCT_APPROVED':
-        setSession((prev) => {
-          if (!prev || prev.id !== sessionId || !productId) return prev;
-          const currentProduct = prev.products[productId];
-          if (!currentProduct) return prev;
-
-          return {
-            ...prev,
-            approvedProductID: productId,
-            products: {
-              ...prev.products,
-              [productId]: { ...currentProduct, approved: true },
-            },
-          };
-        });
-        break;
-
-      case 'PRODUCT_SUGGESTED': 
+      case 'READY_STATUS_UPDATED':
+      case 'PRODUCT_SUGGESTED':
+      case 'READY_RESET':
         try {
           const updatedSession = await sessionService.getRoomFromBackend(sessionId);
           if (updatedSession) {
             setSession(updatedSession);
           }
         } catch (error) {
-          console.error('Error al sincronizar la sala tras producto sugerido:', error);
+          console.error('Error al sincronizar la sala con el backend:', error);
         }
         break;
-      
+
+      case 'GROUP_CHECKOUT_TRIGGERED':
+        try {
+          const finishedSession = await sessionService.getRoomFromBackend(sessionId);
+          if (finishedSession) {
+            (finishedSession as any).approvedProductID = "GROUP_CHECKOUT";
+            setSession(finishedSession);
+          }
+        } catch (error) {
+          console.error('Error al gatillar checkout grupal:', error);
+        }
+        break;
+
+      case 'GROUP_COMPRA_SUCCESSFUL':
+        try {
+          const successSession = await sessionService.getRoomFromBackend(sessionId);
+          if (successSession) {
+            successSession.status = "SUCCESS"; 
+            setSession(successSession);
+          }
+        } catch (error) {
+          console.error('Error al sincronizar éxito de compra:', error);
+        }
+        break;
+
       default:
         console.log('[Context] Mensaje WebSocket de tipo no registrado:', msg.type);
     }
@@ -99,14 +78,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const realSession = await sessionService.createRoomInBackend(userId);
       setSession(realSession);
-      
-      sendMessage({ 
-        type: 'JOIN', 
-        session_id: realSession.id, 
-        user_id: userId 
-      });
+      sendMessage({ type: 'JOIN', session_id: realSession.id, user_id: userId });
     } catch (err) {
-      console.error('Error al instanciar la creación de sala:', err);
+      console.error('Error al crear sala:', err);
     }
   };
 
@@ -114,52 +88,44 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setUserID(userId);
     try {
       const backendSession = await sessionService.getRoomFromBackend(sessionId);
-      
       if (backendSession) {
         setSession(backendSession);
       } else {
-        setSession({
-          id: sessionId,
-          participants: [userId],
-          products: {},
-          status: "ACTIVE"
-        });
+        setSession({ id: sessionId, participants: [userId], products: {}, status: "ACTIVE" });
       }
-
-      sendMessage({ 
-        type: 'JOIN', 
-        session_id: sessionId, 
-        user_id: userId 
-      });
+      sendMessage({ type: 'JOIN', session_id: sessionId, user_id: userId });
     } catch (err) {
-      console.error('Error crítico al intentar unirse a la sala:', err);
+      console.error('Error al unirse a la sala:', err);
     }
   };
 
   const voteProduct = (productId: string) => {
     if (!session) return;
-    sendMessage({
-      type: 'VOTE',
-      session_id: session.id,
-      user_id: userID,
-      product_id: productId
-    });
+    sendMessage({ type: 'VOTE', session_id: session.id, user_id: userID, product_id: productId });
   };
 
   const suggestProduct = async (productId: string) => {
     if (!session) return;
     try {
       const updatedSession = await sessionService.suggestProduct(session.id, productId);
-      if (updatedSession) {
-        setSession(updatedSession);
-      }
+      if (updatedSession) setSession(updatedSession);
     } catch (err) {
       console.error('Error al sugerir producto:', err);
     }
   };
 
+  const sendReadyStatus = () => {
+    if (!session) return;
+    sendMessage({ type: 'READY', session_id: session.id, user_id: userID });
+  };
+
+  const sendPayStatus = () => {
+    if (!session) return;
+    sendMessage({ type: 'PAY', session_id: session.id, user_id: userID });
+  };
+
   return (
-    <SessionContext.Provider value={{ session, userID, createRoom, joinRoom, voteProduct, suggestProduct }}>
+    <SessionContext.Provider value={{ session, userID, createRoom, joinRoom, voteProduct, suggestProduct, sendReadyStatus, sendPayStatus }}>
       {children}
     </SessionContext.Provider>
   );

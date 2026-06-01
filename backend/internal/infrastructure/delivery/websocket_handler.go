@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/abril/meli-co-purchase/internal/domain/repository"
 	"github.com/abril/meli-co-purchase/internal/usecases"
 	"github.com/gorilla/websocket"
 )
@@ -18,22 +19,29 @@ var upgrader = websocket.Upgrader{
 }
 
 type WSMessage struct {
-	Type      string `json:"type"`
-	SessionID string `json:"session_id"`
-	UserID    string `json:"user_id"`
-	ProductID string `json:"product_id,omitempty"`
+	Type       string   `json:"type"`
+	SessionID  string   `json:"session_id"`
+	UserID     string   `json:"user_id"`
+	ProductID  string   `json:"product_id,omitempty"`
+	ReadyUsers []string `json:"ready_users,omitempty"`
 }
 
 type WebSocketHandler struct {
-	voteUseCase *usecases.VoteProductUseCase
-	rooms       map[string][]*websocket.Conn
-	roomsMutex  sync.RWMutex
+	voteUseCase  *usecases.VoteProductUseCase
+	readyUseCase *usecases.ReadySessionUseCase
+	payUseCase   *usecases.PaySplitUseCase
+	repo         repository.SessionRepository
+	rooms        map[string][]*websocket.Conn
+	roomsMutex   sync.RWMutex
 }
 
-func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase) *WebSocketHandler {
+func NewWebSocketHandler(voteUC *usecases.VoteProductUseCase, readyUC *usecases.ReadySessionUseCase, payUC *usecases.PaySplitUseCase, repo repository.SessionRepository) *WebSocketHandler {
 	return &WebSocketHandler{
-		voteUseCase: voteUC,
-		rooms:       make(map[string][]*websocket.Conn),
+		voteUseCase:  voteUC,
+		readyUseCase: readyUC,
+		payUseCase:   payUC,
+		repo:         repo,
+		rooms:        make(map[string][]*websocket.Conn),
 	}
 }
 
@@ -62,8 +70,16 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 		switch msg.Type {
 		case "JOIN":
 			h.addConnectionToRoom(msg.SessionID, conn)
+
+			session, err := h.repo.FindByID(context.Background(), msg.SessionID)
+
+			if err == nil && session != nil {
+				_ = session.AddParticipant(msg.UserID)
+				_ = h.repo.Save(context.Background(), session)
+			}
+
 			h.broadcastToRoom(msg.SessionID, WSMessage{
-				Type:      "USER_JOINED",
+				Type:      "ROOM_STRUCTURE_CHANGED",
 				SessionID: msg.SessionID,
 				UserID:    msg.UserID,
 			})
@@ -75,24 +91,55 @@ func (h *WebSocketHandler) HandleConnection(w http.ResponseWriter, r *http.Reque
 				UserID:    msg.UserID,
 			}
 
-			isApproved, err := h.voteUseCase.Execute(context.Background(), req)
+			_, err := h.voteUseCase.Execute(context.Background(), req)
 			if err != nil {
 				log.Printf("Error procesando voto en el negocio: %v", err)
 				continue
 			}
 
 			h.broadcastToRoom(msg.SessionID, WSMessage{
-				Type:      "VOTE_UPDATED",
+				Type:      "ROOM_STRUCTURE_CHANGED",
 				SessionID: msg.SessionID,
 				UserID:    msg.UserID,
 				ProductID: msg.ProductID,
 			})
 
-			if isApproved {
+		case "READY":
+			allReady, err := h.readyUseCase.Execute(context.Background(), msg.SessionID, msg.UserID)
+			if err != nil {
+				log.Printf("Error al procesar estado de listo: %v", err)
+				continue
+			}
+
+			if allReady {
 				h.broadcastToRoom(msg.SessionID, WSMessage{
-					Type:      "PRODUCT_APPROVED",
+					Type:      "GROUP_CHECKOUT_TRIGGERED",
 					SessionID: msg.SessionID,
-					ProductID: msg.ProductID,
+				})
+			} else {
+				h.broadcastToRoom(msg.SessionID, WSMessage{
+					Type:      "ROOM_STRUCTURE_CHANGED",
+					SessionID: msg.SessionID,
+					UserID:    msg.UserID,
+				})
+			}
+		case "PAY":
+			allPaid, err := h.payUseCase.Execute(context.Background(), msg.SessionID, msg.UserID)
+			if err != nil {
+				log.Printf("Error al procesar pago: %v", err)
+				continue
+			}
+
+			if allPaid {
+				h.broadcastToRoom(msg.SessionID, WSMessage{
+					Type:      "GROUP_COMPRA_SUCCESSFUL",
+					SessionID: msg.SessionID,
+				})
+			} else {
+				h.broadcastToRoom(msg.SessionID, WSMessage{
+					Type:      "ROOM_STRUCTURE_CHANGED",
+					SessionID: msg.SessionID,
+					UserID:    msg.UserID,
 				})
 			}
 		}
