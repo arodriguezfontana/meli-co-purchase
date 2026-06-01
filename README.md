@@ -2,13 +2,6 @@
 
 Un proyecto Full Stack desarrollado con la iniciativa de resolver un desafío clave: simplificar la experiencia del usuario al realizar compras compartidas y dividir gastos de forma equitativa en tiempo real.
 
-### Video demostrativo
-<p align="center">
-  <video src="./video/video.mp4" width="100%" controls muted>
-    Tu navegador no soporta videos incrustados.
-  </video>
-</p>
-
 ### Tecnologías utilizadas
 - **Backend:** Go (Golang)
 - **Base de Datos:** Redis (Persistencia rápida en memoria)
